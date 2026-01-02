@@ -8,6 +8,10 @@ interface DraggableItem {
   color: string;
 }
 
+interface DroppedItem extends DraggableItem {
+  instanceId: number;
+}
+
 export default function DraggablePage() {
   const [items] = useState<DraggableItem[]>([
     { id: 1, content: '组件 A', color: 'bg-blue-500' },
@@ -17,8 +21,9 @@ export default function DraggablePage() {
     { id: 5, content: '组件 E', color: 'bg-pink-500' },
   ]);
 
-  const [droppedItems, setDroppedItems] = useState<DraggableItem[]>([]);
+  const [droppedItems, setDroppedItems] = useState<DroppedItem[]>([]);
   const [draggedItem, setDraggedItem] = useState<DraggableItem | null>(null);
+  const [instanceCounter, setInstanceCounter] = useState(0);
 
   const handleDragStart = (item: DraggableItem) => {
     setDraggedItem(item);
@@ -30,13 +35,14 @@ export default function DraggablePage() {
 
   const handleDrop = () => {
     if (draggedItem) {
-      setDroppedItems([...droppedItems, draggedItem]);
+      setInstanceCounter(prev => prev + 1);
+      setDroppedItems([...droppedItems, { ...draggedItem, instanceId: instanceCounter + 1 }]);
       setDraggedItem(null);
     }
   };
 
-  const handleRemoveItem = (id: number) => {
-    setDroppedItems(droppedItems.filter(item => item.id !== id));
+  const handleRemoveItem = (instanceId: number) => {
+    setDroppedItems(droppedItems.filter(item => item.instanceId !== instanceId));
   };
 
   return (
@@ -91,12 +97,12 @@ export default function DraggablePage() {
               <div className="grid grid-cols-2 gap-4">
                 {droppedItems.map((item) => (
                   <div
-                    key={item.id}
+                    key={item.instanceId}
                     className={`${item.color} relative flex h-24 items-center justify-center rounded-lg text-lg font-semibold text-white shadow-md transition-transform hover:scale-105`}
                   >
                     {item.content}
                     <button
-                      onClick={() => handleRemoveItem(item.id)}
+                      onClick={() => handleRemoveItem(item.instanceId)}
                       className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/40"
                       aria-label="移除组件"
                     >
